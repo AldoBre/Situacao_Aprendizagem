@@ -28,18 +28,18 @@ typedef struct
 typedef struct
 {
     char cnpj[14];
-    int codigoProduto;
-    int quantidade;
-
-} Estoque;
-
-typedef struct
-{
-    char cnpj[14];
     char nome[50];
     char segmento[200];
 
 } Loja;
+
+typedef struct
+{
+    Loja loja[100];
+    Produto codigoProduto;
+    int quantidade;
+
+} Estoque;
 
 typedef struct
 {
@@ -66,7 +66,7 @@ typedef struct
 //---------------------------------------------
 // Assinatura de funções.
 Produto cadastraProduto();
-void listaprodutos(Produto cadastraProduto);
+void listaprodutos(Produto cadastraProduto, Loja novaloja);
 Loja novaloja();
 void listalojas(Loja novaloja);
 void imprimecliente(Cliente cadastraCliente);
@@ -77,6 +77,7 @@ void imprimeCompra(Compra cadastraCompra);
 Compra cadastraCompra();
 void imprimeEstoque(Estoque cadastraEstoque);
 Estoque cadastraEstoque();
+void salvaLojaTXT (Loja lojatxt);
 
 //---------------------------------------------
 // Variáveis globais.
@@ -87,8 +88,8 @@ Loja loja[100];
 Cliente clientes[100];
 Carrinho carrinhos[100];
 Compra compras[100];
-int n, contloja = 0, contprodutos = 0, contcliente = 0, contcarrinho = 0, contestoque = 0;
-char opcao;
+int n, contloja = 0, contprodutos = 0, contcliente = 0, contcarrinho = 0, contestoque = 0, posicao;
+char opcao, cnpjs[14], seguir;
 
 //---------------------------------------------
 // Função main.
@@ -107,6 +108,7 @@ int main()
                "| 1 - Área do lojista                |\n"
                "| 2 - Area do Cliente                |\n"
                "| 3 - Consulta de Estoque            |\n"
+               "| 4 - Lista de produtos              |\n"
                "|[ESC] - Sair                        |\n"
                "======================================\n");
 
@@ -126,24 +128,51 @@ int main()
                 if (contloja < 100)
                 {
                     loja[contloja++] = novaloja();
-                    listalojas(loja[n]);
+                    salvaLojaTXT(loja[n]);  
+                    printf("\n [!] - Loja Cadastrada com sucesso!\n\n");
+                    system("Pause");
+                    system("cls");
+                    break;                  
                 }
-                printf("\n [!] - Loja Cadastrada com sucesso!\n\n");
-                system("Pause");
-                system("cls");
-                break;
+            
 
             case '2':
+                printf("\nDigite seu CNPJ: ");
+                fflush(stdin);
+                gets(cnpjs);
+
+                int i;
                 if (contprodutos < 100)
                 {
-                    produtos[contprodutos++] = cadastraProduto();
-                    listaprodutos(produtos[n]);
+                    for (i = 0; i < 100; i++)
+                    {
+                        if (strcmp(cnpjs, loja[i].cnpj) != 0)
+                        {
+                            i++;
+                        }
+                        else
+                        {
+                            strcmp(cnpjs, loja[i].cnpj) == 0;
+                            posicao = i;
+                            system("cls");
+                            printf("\n [!] - CNPJ encontrado!\n\n");
+                            while (seguir != 'n')
+                            {
+                                printf("Olá %s\n", loja[posicao].nome);
+
+                                produtos[contprodutos++] = cadastraProduto();
+
+                                printf("\n\nDeseja continuar?[s/n] ");
+                                scanf(" %c", &seguir);
+                            }
+                        }
+                    }
                 }
-                printf("\n [!] Produto cadastrado com sucesso!\n\n");
-                system("pause");
-                system("cls");
+                break;
+
                 break;
             case '3':
+
                 if (contestoque < 100)
                 {
                     estoques[contestoque++] = cadastraEstoque();
@@ -200,7 +229,7 @@ int main()
                 break;
             case 27:
                 system("cls");
-                printf("\n [!] - Voltando ao menu...\n\n"); 
+                printf("\n [!] - Voltando ao menu...\n\n");
                 break;
 
             default:
@@ -210,14 +239,18 @@ int main()
                 break;
             }
             break;
-        
+
         case '3':
             imprimeEstoque(estoques[n]);
             break;
 
+        case '4':
+            listaprodutos(produtos[n], loja[n]);
+            break;
+
         default:
             printf("\n [!] - Opção inválida, tente novamente...\n\n");
-    
+
             break;
         }
     }
@@ -252,9 +285,10 @@ Produto cadastraProduto()
 //---------------------------------------------
 // Função imprime Produto
 
-void listaprodutos(Produto cadastraProduto)
+void listaprodutos(Produto cadastraProduto, Loja novaloja)
 {
     printf("\n\n-----LISTA DE PRODUTOS-----\n");
+    printf("Loja: %s\n", novaloja.nome);
     printf("Código: %d\n", cadastraProduto.codigoProduto);
     printf("Descrição: %s\n", cadastraProduto.descricao);
     printf("Valor: %.2f\n", cadastraProduto.valor);
@@ -269,12 +303,15 @@ Loja novaloja()
 
     printf("\n-----CADASTRO DE LOJA-----\n");
     printf("CNPJ: ");
+    fflush(stdin);
     gets(novaloja.cnpj);
 
     printf("Nome: ");
+    fflush(stdin);
     gets(novaloja.nome);
 
     printf("Segmento: ");
+    fflush(stdin);
     gets(novaloja.segmento);
 
     return (novaloja);
@@ -286,7 +323,6 @@ Loja novaloja()
 void listalojas(Loja novaloja)
 {
     printf("\n\n-----LISTA DE LOJAS-----\n");
-    printf("\t\t Loja Nº %d\n", contloja);
     printf("CNPJ: %s \n", novaloja.cnpj);
     printf("Nome: %s \n", novaloja.nome);
     printf("Segmento: %s \n", novaloja.segmento);
@@ -390,7 +426,7 @@ Estoque cadastraEstoque()
     printf("\n-----CADASTRA ESTOQUE-----\n\n");
     printf("Digite o CNPJ: ");
     fflush(stdin);
-    gets(cadastraEstoque.cnpj);
+    gets(cadastraEstoque.loja);
 
     printf("Digite o código do Produto: ");
     scanf("%d", &cadastraEstoque.codigoProduto);
@@ -406,7 +442,28 @@ Estoque cadastraEstoque()
 void imprimeEstoque(Estoque cadastraEstoque)
 {
     printf("\n\n-------Estoque------\n\n");
-    printf("CNPJ: %s\n", cadastraEstoque.cnpj);
+    printf("CNPJ: %s\n", cadastraEstoque.loja);
     printf("Produto: %d\n", cadastraEstoque.codigoProduto);
     printf("Quantidade: %d\n", cadastraEstoque.quantidade);
 }
+
+//---------------------------------------------
+// Função Imprime Lojas
+
+void salvaLojaTXT (Loja lojatxt){
+
+    FILE *fp = fopen("Lojas.txt", "a+");
+
+    if (fp == NULL)
+    {
+        printf("\n [!] problemas com o arquivo (Lojas.txt) \n\n");
+    }
+
+    fprintf(fp,"\n---------------------------\n");
+    fprintf(fp,"%s ",lojatxt.cnpj);
+    fprintf(fp,"%s ", lojatxt.nome);
+    fprintf(fp,"%s ", lojatxt.segmento);
+    
+    fclose(fp);
+}
+
