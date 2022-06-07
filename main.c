@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#define MAX_CLIENTES 100
+
 //---------------------------------------------
 // Estruturas.
 
@@ -43,7 +45,7 @@ typedef struct
 
 typedef struct
 {
-    char cpf[9];
+    char cpf[12];
     char nome[50];
     float saldo;
 
@@ -51,7 +53,7 @@ typedef struct
 
 typedef struct
 {
-    char cpf[14];
+    char cpf[12];
     int codigoProduto;
 
 } Carrinho;
@@ -60,7 +62,7 @@ typedef struct
 {
     char cpf[14];
     float total;
-    Produto produtos[100];
+    int codigoProdutos[100];
 } Compra;
 
 //---------------------------------------------
@@ -77,15 +79,14 @@ void imprimeCompra(Compra cadastraCompra);
 Compra cadastraCompra();
 void imprimeEstoque(Estoque cadastraEstoque);
 Estoque cadastraEstoque();
-void salvaLojaTXT (Loja lojatxt);
-
 //---------------------------------------------
 // Variáveis globais.
 
+FILE *fp = NULL;
 Produto produtos[100];
 Estoque estoques[100];
 Loja loja[100];
-Cliente clientes[100];
+Cliente clientes[MAX_CLIENTES];
 Carrinho carrinhos[100];
 Compra compras[100];
 int n, contloja = 0, contprodutos = 0, contcliente = 0, contcarrinho = 0, contestoque = 0, posicao;
@@ -128,7 +129,6 @@ int main()
                 if (contloja < 100)
                 {
                     loja[contloja++] = novaloja();
-                    salvaLojaTXT(loja[n]);  
                     printf("\n [!] - Loja Cadastrada com sucesso!\n\n");
                     system("Pause");
                     system("cls");
@@ -210,6 +210,7 @@ int main()
                 {
                     clientes[contcliente++] = cadastraCliente();
                     imprimecliente(clientes[n]);
+                    system("pause");
                 }
                 printf("\n [!] - Cliente cadastrado com sucesso!\n\n");
                 system("cls");
@@ -256,6 +257,9 @@ int main()
     }
     return (0);
 }
+//para adicionar aquivos externos e bibliotecas gcc -0 situacao main.c cliente.c produto.c
+
+
 
 //---------------------------------------------
 // Funções.
@@ -265,11 +269,17 @@ int main()
 
 Produto cadastraProduto()
 {
+    fp = fopen("Produtos.txt","a+");
+    
+       if (fp == NULL)
+    {
+        printf("\n [!] problemas com o arquivo (Produtos.txt) \n\n");
+    }
 
     Produto cadastraProduto;
 
     printf("\n-----CADASTRO DE PRODUTOS-----\n");
-    printf("Código do produto: ");
+    printf("Informe o Código do produto: ");
     scanf("%d", &cadastraProduto.codigoProduto);
 
     printf("Informe a descrição do produto: ");
@@ -278,6 +288,15 @@ Produto cadastraProduto()
 
     printf("Informe o valor do produto: ");
     scanf("%f", &cadastraProduto.valor);
+
+    fprintf(fp,"\n----------------------------\n");
+    fprintf(fp,"%d ",cadastraProduto.codigoProduto);
+    fprintf(fp,"%s ",cadastraProduto.descricao);
+    fprintf(fp,"%.2f ",cadastraProduto.valor);
+    
+    fclose(fp);
+    
+
 
     return (cadastraProduto);
 }
@@ -288,7 +307,7 @@ Produto cadastraProduto()
 void listaprodutos(Produto cadastraProduto, Loja novaloja)
 {
     printf("\n\n-----LISTA DE PRODUTOS-----\n");
-    printf("Loja: %s\n", novaloja.nome);
+    //printf("Loja: %s\n", novaloja.nome);
     printf("Código: %d\n", cadastraProduto.codigoProduto);
     printf("Descrição: %s\n", cadastraProduto.descricao);
     printf("Valor: %.2f\n", cadastraProduto.valor);
@@ -299,6 +318,12 @@ void listaprodutos(Produto cadastraProduto, Loja novaloja)
 
 Loja novaloja()
 {
+    fp = fopen("Lojas.txt", "a+");
+
+    if (fp == NULL)
+    {
+        printf("\n [!] problemas com o arquivo (Lojas.txt) \n\n");
+    }
     Loja novaloja;
 
     printf("\n-----CADASTRO DE LOJA-----\n");
@@ -313,6 +338,13 @@ Loja novaloja()
     printf("Segmento: ");
     fflush(stdin);
     gets(novaloja.segmento);
+
+    fprintf(fp,"\n---------------------------\n");
+    fprintf(fp,"%s ",novaloja.cnpj);
+    fprintf(fp,"%s ", novaloja.nome);
+    fprintf(fp,"%s ", novaloja.segmento);
+    
+    fclose(fp);
 
     return (novaloja);
 }
@@ -333,7 +365,12 @@ void listalojas(Loja novaloja)
 
 Cliente cadastraCliente()
 {
-
+    fp = fopen("Clientes.txt","a+");
+    
+       if (fp == NULL)
+    {
+        printf("\n [!] problemas com o arquivo (Clientes.txt) \n\n");
+    }
     Cliente cadastraCliente;
 
     printf("\n-----CADASTRO DE CLIENTE-----\n");
@@ -345,8 +382,16 @@ Cliente cadastraCliente()
 
     printf("Seu Saldo: ");
     scanf("%f", &cadastraCliente.saldo);
+    fflush(stdin);
 
-    return (cadastraCliente);
+    fprintf(fp,"\n---------------------------\n");
+    fprintf(fp,"%s ",cadastraCliente.nome);
+    fprintf(fp,"%s ",cadastraCliente.cpf);
+    fprintf(fp,"%.2f ",cadastraCliente.saldo);
+
+     fclose(fp);
+
+    return(cadastraCliente);
 }
 //---------------------------------------------
 // Função imprime cliente
@@ -365,6 +410,12 @@ void imprimecliente(Cliente cadastraCliente)
 
 Carrinho cadastraCarrinho()
 {
+    fp = fopen("Carrinho.txt","a+");
+    
+       if (fp == NULL)
+    {
+        printf("\n [!] problemas com o arquivo (Carrinho.txt) \n\n");
+    }
 
     Carrinho cadastraCarrinho;
 
@@ -374,6 +425,12 @@ Carrinho cadastraCarrinho()
 
     printf("Digite o código do produto: ");
     scanf("%d", &cadastraCarrinho.codigoProduto);
+
+    fprintf(fp,"\n----------------------------\n");
+    fprintf(fp,"%s ",cadastraCarrinho.cpf);
+    fprintf(fp,"%d ",cadastraCarrinho.codigoProduto);
+    
+    fclose(fp);
 
     return (cadastraCarrinho);
 }
@@ -394,13 +451,23 @@ void imprimeCarrinho(Carrinho cadastraCarrinho)
 
 Compra cadastraCompra()
 {
-
+    fp = fopen("Compra.txt","a+");
+    
+    if (fp == NULL)
+    {
+        printf("\n [!] problemas com o arquivo (Compra.txt) \n\n");
+    }
     Compra cadastraCompra;
 
     printf("\n-----CADASTRA COMPRA-----\n\n");
     printf("Digite o seu CPF: ");
     gets(cadastraCompra.cpf);
 
+    fprintf(fp,"\n----------------------------\n");
+    fprintf(fp,"%s ",cadastraCompra.cpf);
+  
+    
+    fclose(fp);
     return (cadastraCompra);
 }
 
@@ -420,7 +487,12 @@ void imprimeCompra(Compra cadastraCompra)
 
 Estoque cadastraEstoque()
 {
-
+    fp = fopen("Estoque.txt","a+");
+    
+    if (fp == NULL)
+    {
+        printf("\n [!] problemas com o arquivo (Compra.txt) \n\n");
+    }
     Estoque cadastraEstoque;
 
     printf("\n-----CADASTRA ESTOQUE-----\n\n");
@@ -434,6 +506,14 @@ Estoque cadastraEstoque()
     printf("Digite a quantidade em estoque: ");
     scanf("%d", &cadastraEstoque.quantidade);
 
+    fprintf(fp,"\n----------------------------\n");
+    fprintf(fp,"%s ",cadastraEstoque.loja);
+    fprintf(fp,"%d ",cadastraEstoque.codigoProduto);
+    fprintf(fp,"%d ",cadastraEstoque.quantidade);
+    
+    fclose(fp);
+    
+
     return (cadastraEstoque);
 }
 //---------------------------------------------
@@ -446,24 +526,3 @@ void imprimeEstoque(Estoque cadastraEstoque)
     printf("Produto: %d\n", cadastraEstoque.codigoProduto);
     printf("Quantidade: %d\n", cadastraEstoque.quantidade);
 }
-
-//---------------------------------------------
-// Função Imprime Lojas
-
-void salvaLojaTXT (Loja lojatxt){
-
-    FILE *fp = fopen("Lojas.txt", "a+");
-
-    if (fp == NULL)
-    {
-        printf("\n [!] problemas com o arquivo (Lojas.txt) \n\n");
-    }
-
-    fprintf(fp,"\n---------------------------\n");
-    fprintf(fp,"%s ",lojatxt.cnpj);
-    fprintf(fp,"%s ", lojatxt.nome);
-    fprintf(fp,"%s ", lojatxt.segmento);
-    
-    fclose(fp);
-}
-
